@@ -19,6 +19,7 @@ export default class extends Component {
     }
 
     GetEmployees() {
+      // return [{name: "Jagdish"}]
       fetch('http://127.0.0.1:5000/employees/all', {
         method: 'GET',
         headers: {
@@ -28,7 +29,7 @@ export default class extends Component {
       ).then(response => {
       if (response.ok) {
         response.json().then(json => {
-          employees = json;
+          this.setState({ rowData: json.employees})
         });
       }
         return this.createRowData()
