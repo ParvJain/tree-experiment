@@ -7,7 +7,7 @@ export default class extends Component {
 
         this.state = {
             columnDefs: this.createColumnDefs(),
-            rowData: this.createRowData()
+            rowData: this.GetEmployees()
         }
     }
 
@@ -18,11 +18,31 @@ export default class extends Component {
         this.gridApi.sizeColumnsToFit();
     }
 
+    GetEmployees() {
+      fetch('http://127.0.0.1:5000/employees/all', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      },
+      ).then(response => {
+      if (response.ok) {
+        response.json().then(json => {
+          employees = json;
+        });
+      }
+        return this.createRowData()
+      });
+    }
+
     createColumnDefs() {
         return [
-            {headerName: "Make", field: "make"},
-            {headerName: "Model", field: "model"},
-            {headerName: "Price", field: "price"}
+            {headerName: "name", field: "name"},
+            {headerName: "role", field: "role"},
+            {headerName: "age", field: "age"},
+            {headerName: "joining_date", field: "joining_date"},
+            {headerName: "address", field: "address"},
+            {headerName: "parent_id", field: "parent_id"}
         ];
     }
 

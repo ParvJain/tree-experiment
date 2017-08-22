@@ -1,5 +1,6 @@
 import sys
 from flask import Flask, render_template, request, jsonify, abort
+from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 # from models import Employee
 
@@ -46,6 +47,7 @@ class Employee(db.Model):
         }
 
 @app.route('/employees/all', methods = ['GET'])
+@cross_origin()
 def index():
     print [e.serialize() for e in Employee.query.all()]
     return jsonify({'employees': [e.serialize() for e in Employee.query.all()]})
