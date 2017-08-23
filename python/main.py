@@ -41,7 +41,7 @@ class Employee(db.Model):
             'role': self.role,
             'birth_date': self.birth_date,
             'joining_date': self.joining_date,
-            'age': int((datetime.date.today() - self.birth_date).days / 365.25),
+            'age': int((datetime.date.today() - self.birth_date).days / 365.25) if self.birth_date != None else 0 ,
             'address': self.address,
             'parent_id': self.parent_id
         }
@@ -53,17 +53,19 @@ def index():
     return jsonify({'employees': [e.serialize() for e in Employee.query.all()]})
 
 @app.route('/employees/create', methods = ['POST'])
+@cross_origin()
 def create_employee():
+    print request
     print request.json
     if not request.json or not 'name' in request.json:
         abort(400)
     from datetime import datetime
     employee = Employee(name=request.json.get('name'),
                         role=request.json.get('role', ''),
-                        birth_date=request.json.get('birth_date',''),
+                        birth_date=request.json.get('birth_date', '9170-01-01T00:00:00Z'), #TODO: Fix default date
                         joining_date=request.json.get('joining_date', datetime.now()),
                         address=request.json.get('address', ''),
-                        parent_id=request.json.get('parent_id', ''))
+                        parent_id=request.json.get('parent_id', None))
     db.session.add(employee)
     db.session.commit()
     return jsonify( { 'employee': employee.serialize() } ), 201

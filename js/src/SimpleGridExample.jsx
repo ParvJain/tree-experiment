@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import {AgGridReact} from "ag-grid-react";
+import RowDataFactory from "./RowDataFactory";
 
 export default class extends Component {
     constructor(props) {
@@ -9,12 +10,12 @@ export default class extends Component {
             columnDefs: this.createColumnDefs(),
             rowData: this.GetEmployees()
         }
+        this.onSubmit = this.AddEmployee.bind(this);
     }
 
     onGridReady(params) {
         this.gridApi = params.api;
         this.columnApi = params.columnApi;
-
         this.gridApi.sizeColumnsToFit();
     }
 
@@ -29,11 +30,43 @@ export default class extends Component {
       ).then(response => {
       if (response.ok) {
         response.json().then(json => {
-          this.setState({ rowData: json.employees})
+          this.setState({rowData: json.employees});
         });
       }
-        return this.createRowData()
+        return 0
       });
+    }
+
+    AddEmployee(event) {
+      // alert(event);
+      var self = this;
+      console.log(self.refs.name.value)
+      fetch('http://127.0.0.1:5000/employees/create', {
+       method: 'POST',
+       headers: {
+         "Content-Type": 'application/json',
+       },
+       body: JSON.stringify({
+         name: self.refs.name.value
+       })
+     })
+     .then(function(response) {
+       return response.json()
+     }).then(function(body) {
+       this.setState({
+         rowData: this.state.rowData.concat(body.employee)
+       });
+     });
+      event.preventDefault();
+      // fetch('http://127.0.0.1:5000/employees/create', {
+      //   method: 'POST',
+      //   headers: {
+      //     Accept: 'application/json',
+      //   },
+      //   data: {
+      //     name:
+      //   }
+      // })
     }
 
     createColumnDefs() {
@@ -47,19 +80,22 @@ export default class extends Component {
         ];
     }
 
-    createRowData() {
-        return [
-            {make: "Toyota", model: "Celica", price: 35000},
-            {make: "Ford", model: "Mondeo", price: 32000},
-            {make: "Porsche", model: "Boxter", price: 72000}
-        ];
-    }
-
     render() {
         let containerStyle = {
             height: 115,
             width: 500
         };
+        var employeeList = "Loading.."
+        if (this.state.rowData != undefined) {
+          employeeList = (
+            <select ref="parent_id">
+              <option value="" > -- root --</option>
+                {this.state.rowData.map(function(employee){
+                    return <option value={ employee.id }>{employee.name}</option>;
+                  })}
+            </select>
+          )
+        }
 
         return (
             <div style={containerStyle} className="ag-fresh">
@@ -72,6 +108,16 @@ export default class extends Component {
                     // events
                     onGridReady={this.onGridReady}>
                 </AgGridReact>
+                <h3>Add Employee</h3>
+                <form onSubmit={this.onSubmit}>
+                  <b>Name: </b> <input type="text" ref="name" required/><br/>
+                  <b>Role: </b> <input type="text"ref="role"/><br/>
+                  <b>Birth Date: </b> <input type="date" ref="birth_date"/><br/>
+                  <b>Joining Date: </b> <input type="date"ref="joining_date"/><br/>
+                  <b>Address: </b> <input type="text"ref="address"/><br/>
+                  <b>Manager: </b> {employeeList}<br/>
+                  <button type="submit" value="Add">Submit</button>
+                </form>
             </div>
         )
     }
